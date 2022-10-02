@@ -22,35 +22,35 @@ token=gIkuvaNzQIHg97ATvDxqgjtO
 """
 import os
 
-from fastapi import FastAPI
-from pydantic import BaseModel
+# from fastapi import FastAPI
+# from pydantic import BaseModel
 from slack_bolt import App
 
-app = FastAPI()
+# app = FastAPI()
 app_bolt = App(
     token=os.environ.get("SLACK_BOT_TOKEN"),
     signing_secret=os.environ.get("SLACK_SIGNING_SECRET")
 )
 
-class Payload(BaseModel):
-    text: str
-    channel_name: str
-    channel_id: str
-    user_name: str
-    user_id: str
+# class Payload(BaseModel):
+#     text: str
+#     channel_name: str
+#     channel_id: str
+#     user_name: str
+#     user_id: str
+#
+# @app.get("/")
+# async def root():
+#     return {"message": "Hello "}
+#
+# @app.post("/addRotation")
+# async def addRotation(payload: Payload):
+#     return {
+#         "response_type": "in_channel",
+#         "text": payload.text
+#     }
 
-@app.get("/")
-async def root():
-    return {"message": "Hello "}
-
-@app.post("/addRotation")
-async def addRotation(payload: Payload):
-    return {
-        "response_type": "in_channel",
-        "text": payload.text
-    }
-
-# @app_bolt.message("hello")
-# def message_hello(message, say):
-#     say(f"Hey there <@{message['user']}>!")
+@app_bolt.message("hello")
+def message_hello(message, say):
+    say(f"Hey there <@{message['user']}>!")
 
