@@ -20,11 +20,17 @@ token=gIkuvaNzQIHg97ATvDxqgjtO
 &trigger_id=13345224609.738474920.8088930838d88f008e0
 &api_app_id=A123456
 """
+import os
+
 from fastapi import FastAPI
 from pydantic import BaseModel
-from slack import WebClient
+from slack_bolt import App
 
 app = FastAPI()
+app_bolt = App(
+    token=os.environ.get("SLACK_BOT_TOKEN"),
+    signing_secret=os.environ.get("SLACK_SIGNING_SECRET")
+)
 
 class Payload(BaseModel):
     text: str
@@ -44,4 +50,7 @@ async def addRotation(payload: Payload):
         "text": payload.text
     }
 
+@app_bolt.message("hello")
+def message_hello(message, say):
+    say(f"Hey there <@{message['user']}>!")
 
