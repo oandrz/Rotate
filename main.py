@@ -50,7 +50,7 @@ async def addRotation(payload: Payload):
         "text": payload.text
     }
 
-@app_bolt.message("hello")
-def message_hello(message, say):
-    say(f"Hey there <@{message['user']}>!")
+# @app_bolt.message("hello")
+# def message_hello(message, say):
+#     say(f"Hey there <@{message['user']}>!")
 
