@@ -19,38 +19,48 @@ token=gIkuvaNzQIHg97ATvDxqgjtO
 &response_url=https://hooks.slack.com/commands/1234/5678
 &trigger_id=13345224609.738474920.8088930838d88f008e0
 &api_app_id=A123456
+
+/add-rotation named
 """
 import os
-
-# from fastapi import FastAPI
-# from pydantic import BaseModel
 from slack_bolt import App
+from slack_bolt.adapter.socket_mode import SocketModeHandler
+from collections import deque
 
-# app = FastAPI()
-app_bolt = App(
-    token=os.environ.get("SLACK_BOT_TOKEN"),
-    signing_secret=os.environ.get("SLACK_SIGNING_SECRET")
-)
+app = App(token=os.environ["SLACK_BOT_TOKEN"])
 
-# class Payload(BaseModel):
-#     text: str
-#     channel_name: str
-#     channel_id: str
-#     user_name: str
-#     user_id: str
-#
-# @app.get("/")
-# async def root():
-#     return {"message": "Hello "}
-#
-# @app.post("/addRotation")
-# async def addRotation(payload: Payload):
-#     return {
-#         "response_type": "in_channel",
-#         "text": payload.text
-#     }
+db = dict()
 
-@app_bolt.message("hello")
-def message_hello(message, say):
-    say(f"Hey there <@{message['user']}>!")
 
+@app.command("/add-rotation")
+def add_group(ack, say, command):
+    ack()
+    groupName = command['text']
+    print("your group name is", groupName)
+    q = deque()
+    isKeyExist = groupName in db
+    if isKeyExist:
+        q = db[groupName]
+    q.append("@Andreas.dre")
+    db[groupName] = q
+    say(f"Success add {groupName}")
+
+
+@app.command("/list-rotation")
+def get_turn(ack, say):
+    ack()
+    if len(db) == 0:
+        say("You don't have saved rotation")
+    else:
+        text = ''
+        count = 0
+        for key in db.keys():
+            count += 1
+            if count > 1:
+                text += ', '
+            text += key
+        say(f"Here are the list of your group: {text}")
+
+
+if __name__ == "__main__":
+    SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
