@@ -21,6 +21,10 @@ token=gIkuvaNzQIHg97ATvDxqgjtO
 &api_app_id=A123456
 
 /add-rotation named
+
+slackbot token
+export SLACK_BOT_TOKEN=xoxb-1002662208229-4200810073063-YaBvin8958dRWlEqiQ4nGj7c
+export SLACK_APP_TOKEN=xapp-1-A046B5T3H26-4208778319110-bb7492cdd72be7bc2cbfd36dea6fc992d59afd482e4a16a4ba8bff91a2100d35
 """
 import os
 from slack_bolt import App
@@ -41,13 +45,45 @@ def add_group(ack, say, command):
     isKeyExist = groupName in db
     if isKeyExist:
         q = db[groupName]
-    q.append("@Andreas.dre")
     db[groupName] = q
     say(f"Success add {groupName}")
 
 
+@app.command("/add-member")
+def add_member(ack, say, command):
+    ack()
+    commandText = command['text'].split()
+    groupName = commandText[0]
+    isKeyExist = groupName in db
+    if not isKeyExist:
+        say(f"Group doesn't exist")
+    else:
+        q = db[groupName]
+        numberOfMember = len(commandText)
+        for i in range(1, numberOfMember):
+            q.append(commandText[i])
+        say(f"Add member success")
+
+
+@app.command("/list-member")
+def list_member(ack, say, command):
+    ack()
+    commandText = command['text'].split()
+    groupName = commandText[0]
+    isKeyExist = groupName in db
+    if not isKeyExist:
+        say(f"Group doesn't exist")
+    else:
+        q = db[groupName]
+
+        count = 1
+        for member in q:
+            say(f"Group member number {count}: <{member}>!")
+            count += 1
+
+
 @app.command("/list-rotation")
-def get_turn(ack, say):
+def list_rotation(ack, say):
     ack()
     if len(db) == 0:
         say("You don't have saved rotation")
@@ -60,6 +96,40 @@ def get_turn(ack, say):
                 text += ', '
             text += key
         say(f"Here are the list of your group: {text}")
+
+
+@app.command("/peek-current")
+def peek_current_turn(ack, say, command):
+    ack()
+    commandText = command['text'].split()
+    groupName = commandText[0]
+    isKeyExist = groupName in db
+    if not isKeyExist:
+        say("Group doesn't exist")
+    else:
+        q = db[groupName]
+        currentTurn = q[0]
+
+        if currentTurn is not None:
+            say(f"Current turn is <{currentTurn}>!")
+
+
+@app.command("/rotate")
+def rotate_member(ack, say, command):
+    ack()
+    commandText = command['text'].split()
+    groupName = commandText[0]
+    isKeyExist = groupName in db
+    if not isKeyExist:
+        say("Group doesn't exist")
+    else:
+        q = db[groupName]
+        rotated = q.popleft()
+        current = q[0]
+        q.append(rotated)
+
+        if current is not None:
+            say(f"Current turn is <{current}>!")
 
 
 if __name__ == "__main__":
