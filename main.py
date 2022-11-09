@@ -1,37 +1,11 @@
-"""
-INSIDE my_project folder create a new virtualenv
-- virtualenv env
-
-Activate virtualenv
-- source env/bin/activate
-
-token=gIkuvaNzQIHg97ATvDxqgjtO
-&team_id=T0001
-&team_domain=example
-&enterprise_id=E0001
-&enterprise_name=Globular%20Construct%20Inc
-&channel_id=C2147483705
-&channel_name=test
-&user_id=U2147483697
-&user_name=Steve
-&command=/weather
-&text=94070
-&response_url=https://hooks.slack.com/commands/1234/5678
-&trigger_id=13345224609.738474920.8088930838d88f008e0
-&api_app_id=A123456
-
-/add-rotation named
-
-slackbot token
-export SLACK_BOT_TOKEN=xoxb-1002662208229-4200810073063-YaBvin8958dRWlEqiQ4nGj7c
-export SLACK_APP_TOKEN=xapp-1-A046B5T3H26-4208778319110-bb7492cdd72be7bc2cbfd36dea6fc992d59afd482e4a16a4ba8bff91a2100d35
-"""
 import os
 from slack_bolt import App
-from slack_bolt.adapter.socket_mode import SocketModeHandler
 from collections import deque
 
-app = App(token=os.environ["SLACK_BOT_TOKEN"])
+app = App(
+    token=os.environ["SLACK_BOT_TOKEN"],
+    signing_secret=os.environ["SLACK_SIGNING_SECRET"]
+)
 
 db = dict()
 
@@ -133,4 +107,4 @@ def rotate_member(ack, say, command):
 
 
 if __name__ == "__main__":
-    SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
+    app.start(port=int(os.environ.get("PORT", 3000)))
