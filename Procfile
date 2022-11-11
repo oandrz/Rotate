@@ -1,1 +1,1 @@
-web: gunicorn -w 4 -k uvicorn.workers.UvicornWorker main.py:fastApp
+web: gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:fastApp
