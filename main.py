@@ -1,6 +1,9 @@
 import os
 from slack_bolt import App
 from collections import deque
+from fastapi import FastAPI
+from pydantic import BaseModel
+
 
 app = App(
     token=os.environ["SLACK_BOT_TOKEN"],
@@ -106,5 +109,20 @@ def rotate_member(ack, say, command):
             say(f"Current turn is <{current}>!")
 
 
-if __name__ == "__main__":
-    app.start(port=int(os.environ.get("PORT", 3000)))
+fastApp = FastAPI()
+
+
+class RequestEvent(BaseModel):
+    token: str
+    challenge: str
+    type: str
+
+
+@fastApp.get("/")
+async def root():
+    return {"message": "Hello World"}
+
+
+@fastApp.post("/slack/events")
+async def authorize(request: RequestEvent):
+    return request.challenge
