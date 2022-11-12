@@ -132,5 +132,30 @@ async def authorize(request: RequestEvent):
 
 
 @fastApp.post("/slack/add-rotation")
-async def add_rotation(req: Request):
+async def add_rotation_command(req: Request):
+    return await app_handler.handle(req)
+
+
+@fastApp.post("/slack/add-member")
+async def add_rotation_command(req: Request):
+    return await app_handler.handle(req)
+
+
+@fastApp.post("/slack/list-member")
+def list_member_command(req: Request):
+    return await app_handler.handle(req)
+
+
+@fastApp.post("/slack/list-rotation")
+def list_rotation_command(req: Request):
+    return await app_handler.handle(req)
+
+
+@fastApp.post("/slack/peek-current")
+def list_rotation_command(req: Request):
+    return await app_handler.handle(req)
+
+
+@fastApp.post("/slack/rotate")
+def list_rotation_command(req: Request):
     return await app_handler.handle(req)
