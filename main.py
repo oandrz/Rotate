@@ -36,7 +36,7 @@ def add_group(ack, say, command):
     addNewGroup(
         group=schemas.GroupCreate(
             name=group_name,
-            channel_id=channel_id
+            channelId=channel_id
         )
     )
     say(f"Success add {group_name}")
