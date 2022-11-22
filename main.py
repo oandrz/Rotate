@@ -33,12 +33,7 @@ def add_group(ack, say, command):
     channel_id = command['channel_id']
     print("channel id is", channel_id)
     print("your group name is", group_name)
-    addNewGroup(
-        group=schemas.GroupCreate(
-            name=group_name,
-            channelId=channel_id
-        )
-    )
+
     say(f"Success add {group_name}")
 
 
@@ -178,7 +173,8 @@ async def list_rotation_command(req: Request):
 
 
 # DB
-def addNewGroup(group: schemas.GroupCreate, db: Session = Depends(get_db())):
+@fastApp.post("/group/add")
+async def add_new_group(group: schemas.GroupCreate, db: Session = Depends(get_db)):
     dbGroup = crud.getGroup(db, groupName=group.name, channelId=group.channelId)
     if dbGroup:
         raise HTTPException(status_code=400, detail="Group Already Exist")
