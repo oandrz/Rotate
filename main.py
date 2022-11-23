@@ -84,7 +84,7 @@ def list_rotation(ack, say, command):
     channel_id = command['channel_id']
     url = HOST_URL + "/group/" + channel_id
     response = requests.get(url)
-    group_list = json.loads(response)
+    group_list = json.loads(response.text)
     text = ""
     count = 0
     for group in group_list:
