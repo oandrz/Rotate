@@ -185,7 +185,7 @@ async def list_rotation_command(req: Request):
 
 
 # DB
-@fastApp.post("/group/add", response_model=schemas.Group)
+@fastApp.post("/group/add")
 async def add_new_group(group: schemas.GroupCreate, db: Session = Depends(get_db)):
     dbGroup = crud.getGroup(db, groupName=group.name, channelId=group.channelId)
     if dbGroup:
@@ -195,6 +195,7 @@ async def add_new_group(group: schemas.GroupCreate, db: Session = Depends(get_db
 
 @fastApp.get("/group/{channel_id}", response_model=List[schemas.Group])
 async def get_group_list(channel_id: str, db: Session = Depends(get_db)):
+    print("channel Id: ", channel_id)
     dbGroup = crud.getGroupListInChannel(db=db, channelId=channel_id)
     if dbGroup:
         raise HTTPException(status_code=400, detail="No Group Exist")
