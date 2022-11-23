@@ -3,7 +3,7 @@ from . import models, schemas
 
 
 def getGroupListInChannel(db: Session, channelId: str):
-    return db.query(models.RotationGroup).filter(models.RotationGroup.channelId == channelId).first()
+    return db.query(models.RotationGroup).filter(models.RotationGroup.channelId == channelId)
 
 
 def getMemberInGroup(db: Session, groupName: str, channelId: str):
