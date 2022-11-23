@@ -196,6 +196,7 @@ async def add_new_group(group: schemas.GroupCreate, db: Session = Depends(get_db
 
 @fastApp.get("/group/{channel_id}", response_model=List[schemas.Group])
 async def get_group_list(channel_id: str, db: Session = Depends(get_db)):
+    print("channel id that I want to get is from :", channel_id)
     dbGroup = crud.getGroupListInChannel(db=db, channelId=channel_id)
     print("somethign to get: ", dbGroup)
     if dbGroup is None:
