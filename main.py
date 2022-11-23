@@ -36,11 +36,17 @@ def add_group(ack, say, command):
     url = "https://roundrobinbot-pr-2.onrender.com/group/add"
     request = {"name": group_name, "channelId": channel_id}
     response = requests.post(url, json=request)
+
     print(response)
     print("channel id is", channel_id)
     print("your group name is", group_name)
 
-    say(f"Success add {group_name}")
+    if response == 200:
+        say(f"Success add {group_name}")
+    elif response == 400:
+        say(f"{group_name} already exist in our database, please try with another user name")
+    else:
+        say(f"Sorry there's an unrecognizable error in my system, please wait until my engineer fix me")
 
 
 @app.command("/add-member")
