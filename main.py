@@ -1,4 +1,6 @@
 import os
+import requests
+import json
 from slack_bolt import App
 from collections import deque
 from fastapi import FastAPI, Request, Depends, HTTPException
@@ -31,6 +33,10 @@ def add_group(ack, say, command):
     ack()
     group_name = command['text']
     channel_id = command['channel_id']
+    url = "https://roundrobinbot-pr-2.onrender.com/group/add"
+    request = {"name": group_name, "channelId": channel_id}
+    response = requests.post(url, json=request)
+    print(response)
     print("channel id is", channel_id)
     print("your group name is", group_name)
 
