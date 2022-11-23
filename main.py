@@ -2,7 +2,6 @@ import os
 import requests
 import json
 from slack_bolt import App
-from collections import deque
 from fastapi import FastAPI, Request, Depends, HTTPException
 from pydantic import BaseModel
 from slack_bolt.adapter.fastapi import SlackRequestHandler
@@ -14,6 +13,7 @@ from db.database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 
+HOST_URL = "https://roundrobinbot-pr-2.onrender.com"
 app = App(
     token=os.environ["SLACK_BOT_TOKEN"],
     signing_secret=os.environ["SLACK_SIGNING_SECRET"]
@@ -33,13 +33,9 @@ def add_group(ack, say, command):
     ack()
     group_name = command['text']
     channel_id = command['channel_id']
-    url = "https://roundrobinbot-pr-2.onrender.com/group/add"
+    url = HOST_URL + "/group/add"
     request = {"name": group_name, "channelId": channel_id}
     response = requests.post(url, json=request)
-
-    print("your response is:", response)
-    print("channel id is", channel_id)
-    print("your group name is", group_name)
 
     if response.status_code == 200 or response.status_code == 201:
         say(f"Success add {group_name}")
@@ -83,8 +79,20 @@ def list_member(ack, say, command):
 
 
 @app.command("/list-rotation")
-def list_rotation(ack, say):
+def list_rotation(ack, say, command):
     ack()
+    channel_id = command['channel_id']
+    url = HOST_URL + "/group/" + channel_id
+    response = requests.get(url)
+    group_list = json.loads(response)
+    text = ""
+    count = 0
+    for group in group_list:
+        count += 1
+        if count > 1:
+            text += ','
+        text += group.name
+    say(f"Here are the list of your group: {text}")
     # if len(db) == 0:
     #     say("You don't have saved rotation")
     # else:
@@ -190,15 +198,12 @@ async def add_new_group(group: schemas.GroupCreate, db: Session = Depends(get_db
     dbGroup = crud.getGroup(db, groupName=group.name, channelId=group.channelId)
     if dbGroup:
         raise HTTPException(status_code=400, detail="Group Already Exist")
-    print("request is: ", group)
     return crud.createGroup(db=db, group=group)
 
 
 @fastApp.get("/group/{channel_id}", response_model=List[schemas.Group])
 async def get_group_list(channel_id: str, db: Session = Depends(get_db)):
-    print("channel id that I want to get is from :", channel_id)
     dbGroup = crud.getGroupListInChannel(db=db, channelId=channel_id)
-    print("somethign to get: ", dbGroup)
     if dbGroup is None:
         raise HTTPException(status_code=400, detail="No Group Exist")
     return dbGroup
