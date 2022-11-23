@@ -198,6 +198,6 @@ async def add_new_group(group: schemas.GroupCreate, db: Session = Depends(get_db
 async def get_group_list(channel_id: str, db: Session = Depends(get_db)):
     dbGroup = crud.getGroupListInChannel(db=db, channelId=channel_id)
     print("somethign to get: ", dbGroup)
-    if dbGroup:
+    if dbGroup is None:
         raise HTTPException(status_code=400, detail="No Group Exist")
     return dbGroup
