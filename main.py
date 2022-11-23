@@ -37,13 +37,13 @@ def add_group(ack, say, command):
     request = {"name": group_name, "channelId": channel_id}
     response = requests.post(url, json=request)
 
-    print(response)
+    print("your response is:", response)
     print("channel id is", channel_id)
     print("your group name is", group_name)
 
-    if response == 200:
+    if response.status_code == 200 or response.status_code == 201:
         say(f"Success add {group_name}")
-    elif response == 400:
+    elif response.status_code == 400:
         say(f"{group_name} already exist in our database, please try with another user name")
     else:
         say(f"Sorry there's an unrecognizable error in my system, please wait until my engineer fix me")
@@ -190,13 +190,14 @@ async def add_new_group(group: schemas.GroupCreate, db: Session = Depends(get_db
     dbGroup = crud.getGroup(db, groupName=group.name, channelId=group.channelId)
     if dbGroup:
         raise HTTPException(status_code=400, detail="Group Already Exist")
+    print("request is: ", group)
     return crud.createGroup(db=db, group=group)
 
 
 @fastApp.get("/group/{channel_id}", response_model=List[schemas.Group])
 async def get_group_list(channel_id: str, db: Session = Depends(get_db)):
-    print("channel Id: ", channel_id)
     dbGroup = crud.getGroupListInChannel(db=db, channelId=channel_id)
+    print("somethign to get: ", dbGroup)
     if dbGroup:
         raise HTTPException(status_code=400, detail="No Group Exist")
     return dbGroup
