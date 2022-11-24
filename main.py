@@ -87,29 +87,21 @@ def list_rotation(ack, say, command):
 
     if response.status_code == requests.codes.ok:
         group_list = json.loads(response.text)
-        text = ""
-        count = 0
-        for group in group_list:
-            count += 1
-            if count > 1:
-                text += ','
-            text += group['name']
-        say(f"Here are the list of your group: {text}")
+        if len(group_list) == 0:
+            say(f"We don't found any rotation group, please create a new one first.")
+        else:
+            text = ""
+            count = 0
+            for group in group_list:
+                count += 1
+                if count > 1:
+                    text += ','
+                text += group['name']
+            say(f"Here are the list of your group: {text}")
     elif response.status_code == 400:
         say(f"We don't found any rotation group, please create a new one first.")
     else:
         say(f"Sorry there's an unrecognizable error in my system, please wait until my engineer fix me")
-    # if len(db) == 0:
-    #     say("You don't have saved rotation")
-    # else:
-    #     text = ''
-    #     count = 0
-    #     for key in db.keys():
-    #         count += 1
-    #         if count > 1:
-    #             text += ', '
-    #         text += key
-    #     say(f"Here are the list of your group: {text}")
 
 
 @app.command("/peek-current")
