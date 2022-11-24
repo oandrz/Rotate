@@ -95,9 +95,9 @@ def list_rotation(ack, say, command):
             for group in group_list:
                 count += 1
                 if count > 1:
-                    text += ','
+                    text += ', '
                 text += group['name']
-            say(f"Here are the list of your group: {text}")
+            say(f"Here are the group that I could found in this channel: {text}")
     elif response.status_code == 400:
         say(f"We don't found any rotation group, please create a new one first.")
     else:
