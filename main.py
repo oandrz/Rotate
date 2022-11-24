@@ -37,7 +37,7 @@ def add_group(ack, say, command):
     request = {"name": group_name, "channelId": channel_id}
     response = requests.post(url, json=request)
 
-    if response.status_code == 200 or response.status_code == 201:
+    if response.status_code == requests.codes.ok:
         say(f"Success add {group_name}")
     elif response.status_code == 400:
         say(f"{group_name} already exist in our database, please try with another user name")
@@ -84,15 +84,21 @@ def list_rotation(ack, say, command):
     channel_id = command['channel_id']
     url = HOST_URL + "/group/" + channel_id
     response = requests.get(url)
-    group_list = json.loads(response.text)
-    text = ""
-    count = 0
-    for group in group_list:
-        count += 1
-        if count > 1:
-            text += ','
-        text += group.name
-    say(f"Here are the list of your group: {text}")
+
+    if response.status_code == requests.codes.ok:
+        group_list = json.loads(response.text)
+        text = ""
+        count = 0
+        for group in group_list:
+            count += 1
+            if count > 1:
+                text += ','
+            text += group['name']
+        say(f"Here are the list of your group: {text}")
+    elif response.status_code == 400:
+        say(f"We don't found any rotation group, please create a new one first.")
+    else:
+        say(f"Sorry there's an unrecognizable error in my system, please wait until my engineer fix me")
     # if len(db) == 0:
     #     say("You don't have saved rotation")
     # else:
