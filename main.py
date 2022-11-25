@@ -205,3 +205,5 @@ async def get_group_list(channel_id: str, db: Session = Depends(get_db)):
     if dbGroup is None:
         raise HTTPException(status_code=400, detail="No Group Exist")
     return dbGroup
+@fastApp.post("/member/add")
+async def add_member_into_group():

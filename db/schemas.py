@@ -18,14 +18,6 @@ class UserCreate(UserBase):
     pass
 
 
-class User(UserBase):
-    id: int
-    groups: List[GroupBase] = []
-
-    class Config:
-        orm_mode = True
-
-
 class GroupCreate(GroupBase):
     pass
 
