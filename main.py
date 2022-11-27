@@ -13,7 +13,7 @@ from db.database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 
-HOST_URL = "https://roundrobinbot.onrender.com"
+HOST_URL = "https://roundrobinbot-pr-3.onrender.com"
 app = App(
     token=os.environ["SLACK_BOT_TOKEN"],
     signing_secret=os.environ["SLACK_SIGNING_SECRET"]
