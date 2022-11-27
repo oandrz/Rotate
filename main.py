@@ -48,9 +48,26 @@ def add_group(ack, say, command):
 @app.command("/add-member")
 def add_member(ack, say, command):
     ack()
-    commandText = command['text'].split()
-    # groupName = commandText[0]
-    # isKeyExist = groupName in db
+    channel_id = command['channel_id']
+    command_text = command['text'].split()
+
+    group_name = command_text[0]
+    response_group = request_group(channel_id, group_name, say)
+
+    group = json.loads(response_group.text)
+    picked_member = group['pickedSlackId']
+    members = group['members']
+
+    request_update_member(
+        channel_id=channel_id,
+        group_name=group_name,
+        picked_member=picked_member,
+        new_members=command_text,
+        current_members=members,
+        say=say
+    )
+
+    request = {""}
     # if not isKeyExist:
     #     say(f"Group doesn't exist")
     # else:
@@ -60,6 +77,47 @@ def add_member(ack, say, command):
     #         q.append(commandText[i])
     say(f"Add member success")
 
+
+def request_group(channel_id: str, group_name: str, say):
+    url = HOST_URL + "/group"
+    query_params = {"channel_id": channel_id, "group_name": group_name}
+    response = requests.get(url=url, params=query_params)
+    if response.status_code == 400:
+        say(f"{group_name} doesn't exist in our database, please try with another user name")
+    elif response.status_code == requests.codes.ok:
+        return response
+    else:
+        say(f"Sorry there's an unrecognizable error in my system, please wait until my engineer fix me")
+
+
+def request_update_member(
+    channel_id: str,
+    group_name: str,
+    picked_member: str,
+    current_members: str,
+    new_members: str,
+    say
+):
+    members_request = update_member_list(current_members, new_members)
+    url = HOST_URL + "/group/member"
+
+
+def update_member_list(
+    current_members: str,
+    new_members: str,
+):
+    modified_members = current_members
+    count = 0
+
+    for i in range(1, len(new_members) - 1):
+        count += 1
+        if count > 1:
+            modified_members += ','
+        modified_members += new_members[i]
+
+    print("Current modified member is", modified_members)\
+
+    return modified_members
 
 @app.command("/list-member")
 def list_member(ack, say, command):
@@ -193,20 +251,31 @@ async def list_rotation_command(req: Request):
 # DB
 @fastApp.post("/group/add")
 async def add_new_group(group: schemas.GroupCreate, db: Session = Depends(get_db)):
-    dbGroup = crud.getGroup(db, groupName=group.name, channelId=group.channelId)
-    if dbGroup:
+    db_group = crud.getGroup(db, groupName=group.name, channelId=group.channelId)
+    if db_group:
         raise HTTPException(status_code=400, detail="Group Already Exist")
     return crud.createGroup(db=db, group=group)
 
 
 @fastApp.get("/group/{channel_id}", response_model=List[schemas.Group])
 async def get_group_list(channel_id: str, db: Session = Depends(get_db)):
-    dbGroup = crud.getGroupListInChannel(db=db, channelId=channel_id)
-    if dbGroup is None:
+    db_group = crud.getGroupListInChannel(db=db, channelId=channel_id)
+    if db_group is None:
         raise HTTPException(status_code=400, detail="No Group Exist")
-    return dbGroup
+    return db_group
 
 
-@fastApp.post("/member/add")
-async def add_member_into_group():
-    return "ok"
+@fastApp.put("/group/member", response_model=schemas.Group)
+async def update_group_to_add_member(group: schemas.GroupUpdate, db: Session = Depends(get_db)):
+    db_group = crud.getGroup(db, groupName=group.name, channelId=group.channelId)
+    if db_group is None:
+        raise HTTPException(status_code=400, detail="No Group Exist")
+    return crud.updateGroup(db=db, group=group)
+
+
+@fastApp.get("/group")
+async def get_specific_group(channel_id: str, group_name: str, db: Session = Depends(get_db)):
+    db_group = crud.getGroup(db, groupName=group_name, channelId=channel_id)
+    if db_group is None:
+        raise HTTPException(status_code=400, detail="No Group Exist")
+    return db_group

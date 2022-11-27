@@ -21,7 +21,18 @@ def getGroup(db: Session, groupName: str, channelId: str):
 
 
 def createGroup(db: Session, group: schemas.GroupCreate):
-    db_group = models.RotationGroup(name=group.name, channelId=group.channelId, pickedSlackId=group.pickedSlackId)
+    db_group = models.RotationGroup(name=group.name, channelId=group.channelId)
+    db.add(db_group)
+    db.commit()
+    db.refresh(db_group)
+    return db_group
+
+
+def updateGroup(db: Session, group: schemas.GroupUpdate):
+    db_group = getGroup(db=db, groupName=group.name, channelId=group.channelId)
+    for var, value in vars(group).items():
+        print("the value of var is" + var + " and the value is: " + value)
+        setattr(db_group, var, value) if value else None
     db.add(db_group)
     db.commit()
     db.refresh(db_group)

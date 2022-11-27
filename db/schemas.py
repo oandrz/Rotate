@@ -4,27 +4,23 @@ from typing import (
 )
 
 
-class UserBase(BaseModel):
-    slackId: str
-
-
 class GroupBase(BaseModel):
     name: str
     channelId: str
     pickedSlackId: Optional[str] = None
-
-
-class UserCreate(UserBase):
-    pass
+    members: Optional[str] = None
 
 
 class GroupCreate(GroupBase):
     pass
 
 
+class GroupUpdate(GroupBase):
+    pass
+
+
 class Group(GroupBase):
     id: int
-    users: List[UserBase] = []
 
     class Config:
         orm_mode = True
