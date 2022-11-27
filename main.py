@@ -96,7 +96,7 @@ def request_update_member(
     group_name: str,
     picked_member: str,
     current_members: str,
-    new_members: str,
+    new_members: List[str],
     say
 ):
     members_request = update_member_list(current_members, new_members)
@@ -119,13 +119,13 @@ def request_update_member(
 
 def update_member_list(
     current_members: str,
-    new_members: str,
+    new_members: List[str],
 ):
     modified_members = current_members
     count = 0
 
-    print("member is" + new_members)
-    print("current is" + current_members)
+    print("member is", new_members)
+    print("current is", current_members)
     for i in range(1, len(new_members) - 1):
         count += 1
         if count > 1:
