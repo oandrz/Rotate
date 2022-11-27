@@ -68,16 +68,6 @@ def add_member(ack, say, command):
         say=say
     )
 
-    request = {""}
-    # if not isKeyExist:
-    #     say(f"Group doesn't exist")
-    # else:
-    #     q = db[groupName]
-    #     numberOfMember = len(commandText)
-    #     for i in range(1, numberOfMember):
-    #         q.append(commandText[i])
-
-
 
 def request_group(channel_id: str, group_name: str, say):
     url = HOST_URL + "/group"
@@ -96,18 +86,20 @@ def request_update_member(
     group_name: str,
     picked_member: str,
     current_members: str,
-    new_members: List[str],
+    new_members,
     say
 ):
-    members_request = update_member_list(current_members, new_members)
+    members_request = update_member_list(current_members=current_members, new_members=new_members)
     picked_member_request = ""
     if picked_member is None:
         picked_member_request = members_request.split(',')[0]
 
     print("group name is:", members_request)
     print("group name is:", picked_member_request)
+
     url = HOST_URL + "/group/member"
-    request_body = {"name": group_name, "channelId": channel_id, "pickedSlackId": picked_member_request, "members": members_request}
+    request_body = {"name": group_name, "channelId": channel_id, "pickedSlackId": picked_member_request,
+                    "members": members_request}
     response = requests.put(url, json=request_body)
 
     if response.status_code == 400:
@@ -117,15 +109,20 @@ def request_update_member(
     else:
         say(f"Sorry there's an unrecognizable error in my system, please wait until my engineer fix me")
 
+
 def update_member_list(
     current_members: str,
-    new_members: List[str],
+    new_members,
 ):
-    modified_members = current_members
+    modified_members = ""
+    if current_members is not None:
+        modified_members = current_members
+
     count = 0
 
-    print("member is", new_members)
+    print("member is", len(new_members))
     print("current is", current_members)
+
     for i in range(1, len(new_members) - 1):
         count += 1
         if count > 1:
@@ -135,6 +132,7 @@ def update_member_list(
     print("Current modified member is", modified_members)
 
     return modified_members
+
 
 @app.command("/list-member")
 def list_member(ack, say, command):
@@ -293,7 +291,7 @@ async def update_group_to_add_member(group: schemas.GroupUpdate, db: Session = D
     return crud.updateGroup(db=db, group=group)
 
 
-@fastApp.get("/group",  response_model=schemas.Group)
+@fastApp.get("/group", response_model=schemas.Group)
 async def get_specific_group(channel_id: str, group_name: str, db: Session = Depends(get_db)):
     db_group = crud.getGroup(db, groupName=group_name, channelId=channel_id)
     if db_group is None:
