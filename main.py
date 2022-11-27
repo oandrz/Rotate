@@ -120,10 +120,11 @@ def update_member_list(
 
     count = 0
 
-    print("member is", len(new_members))
+    print("member is", new_members)
     print("current is", current_members)
 
     for i in range(1, len(new_members) - 1):
+        print("member loop", new_members[i])
         count += 1
         if count > 1:
             modified_members += ','
