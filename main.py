@@ -124,8 +124,8 @@ def update_member_list(
     modified_members = current_members
     count = 0
 
-    logging.warning("current is" + current_members)
-    logging.warning("member is" + new_members)
+    print("member is" + new_members)
+    print("current is" + current_members)
     for i in range(1, len(new_members) - 1):
         count += 1
         if count > 1:
