@@ -104,8 +104,8 @@ def request_update_member(
     if picked_member is None:
         picked_member_request = members_request.split(',')[0]
 
-    print("group name is:" + members_request)
-    print("group name is:" + picked_member_request)
+    print("group name is:", members_request)
+    print("group name is:", picked_member_request)
     url = HOST_URL + "/group/member"
     request_body = {"name": group_name, "channelId": channel_id, "pickedSlackId": picked_member_request, "members": members_request}
     response = requests.put(url, json=request_body)
@@ -132,7 +132,7 @@ def update_member_list(
             modified_members += ','
         modified_members += new_members[i]
 
-    print("Current modified member is" + modified_members)
+    print("Current modified member is", modified_members)
 
     return modified_members
 
