@@ -1,6 +1,7 @@
 import os
 import requests
 import json
+import logging
 from slack_bolt import App
 from fastapi import FastAPI, Request, Depends, HTTPException
 from pydantic import BaseModel
@@ -102,8 +103,9 @@ def request_update_member(
     picked_member_request = ""
     if picked_member is None:
         picked_member_request = members_request.split(',')[0]
-    print("group name is:", members_request)
-    print("group name is:", picked_member_request)
+
+    print("group name is:" + members_request)
+    print("group name is:" + picked_member_request)
     url = HOST_URL + "/group/member"
     request_body = {"name": group_name, "channelId": channel_id, "pickedSlackId": picked_member_request, "members": members_request}
     response = requests.put(url, json=request_body)
@@ -122,13 +124,15 @@ def update_member_list(
     modified_members = current_members
     count = 0
 
+    logging.warning("current is" + current_members)
+    logging.warning("member is" + new_members)
     for i in range(1, len(new_members) - 1):
         count += 1
         if count > 1:
             modified_members += ','
         modified_members += new_members[i]
 
-    print("Current modified member is", modified_members)\
+    print("Current modified member is" + modified_members)
 
     return modified_members
 
