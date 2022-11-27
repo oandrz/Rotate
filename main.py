@@ -80,11 +80,8 @@ def add_member(ack, say, command):
 
 def request_group(channel_id: str, group_name: str, say):
     url = HOST_URL + "/group"
-    print("channel id is:", channel_id)
-    print("group name is:", group_name)
     query_params = {"channel_id": channel_id, "group_name": group_name}
     response = requests.get(url=url, params=query_params)
-    print("The response that I got is", response.text)
     if response.status_code == 400:
         say(f"{group_name} doesn't exist in our database, please try with another user name")
     elif response.status_code == requests.codes.ok:
@@ -102,6 +99,7 @@ def request_update_member(
     say
 ):
     members_request = update_member_list(current_members, new_members)
+    print("group name is:", members_request)
     url = HOST_URL + "/group/member"
 
 
