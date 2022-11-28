@@ -115,10 +115,11 @@ def update_member_list(
     new_members,
 ):
     modified_members = ""
-    if current_members is not None:
-        modified_members = current_members
-
     count = 0
+
+    if current_members is not None:
+        count = len(current_members.split(","))
+        modified_members = current_members
 
     print("member is", new_members)
     print("current is", current_members)
