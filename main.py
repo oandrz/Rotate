@@ -123,7 +123,7 @@ def update_member_list(
     print("member is", new_members)
     print("current is", current_members)
 
-    for i in range(1, len(new_members) - 1):
+    for i in range(1, len(new_members)):
         print("member loop", new_members[i])
         count += 1
         if count > 1:
