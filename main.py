@@ -1,7 +1,6 @@
 import os
 import requests
 import json
-import logging
 from slack_bolt import App
 from fastapi import FastAPI, Request, Depends, HTTPException
 from pydantic import BaseModel
@@ -14,7 +13,7 @@ from db.database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 
-HOST_URL = "https://roundrobinbot-pr-3.onrender.com"
+HOST_URL = os.environ["API_HOST"]
 app = App(
     token=os.environ["SLACK_BOT_TOKEN"],
     signing_secret=os.environ["SLACK_SIGNING_SECRET"]
@@ -34,6 +33,7 @@ def add_group(ack, say, command):
     ack()
     group_name = command['text']
     channel_id = command['channel_id']
+
     url = HOST_URL + "/group/add"
     request = {"name": group_name, "channelId": channel_id}
     response = requests.post(url, json=request)
@@ -41,7 +41,7 @@ def add_group(ack, say, command):
     if response.status_code == requests.codes.ok:
         say(f"Success add {group_name}")
     elif response.status_code == 400:
-        say(f"{group_name} already exist in our database, please try with another user name")
+        say(f"{group_name} already exist in our database")
     else:
         say(f"Sorry there's an unrecognizable error in my system, please wait until my engineer fix me")
 
@@ -71,10 +71,12 @@ def add_member(ack, say, command):
 
 def request_group(channel_id: str, group_name: str, say):
     url = HOST_URL + "/group"
+
     query_params = {"channel_id": channel_id, "group_name": group_name}
     response = requests.get(url=url, params=query_params)
+
     if response.status_code == 400:
-        say(f"{group_name} doesn't exist in our database, please try with another user name")
+        say(f"{group_name} doesn't exist in our database")
     elif response.status_code == requests.codes.ok:
         return response
     else:
@@ -90,6 +92,7 @@ def request_update_member(
     say
 ):
     members_request = update_member_list(current_members=current_members, new_members=new_members)
+
     picked_member_request = ""
     if picked_member is None:
         picked_member_request = members_request.split(',')[0]
@@ -98,12 +101,13 @@ def request_update_member(
     print("group name is:", picked_member_request)
 
     url = HOST_URL + "/group/member"
+
     request_body = {"name": group_name, "channelId": channel_id, "pickedSlackId": picked_member_request,
                     "members": members_request}
     response = requests.put(url, json=request_body)
 
     if response.status_code == 400:
-        say(f"{group_name} doesn't exist in our database, please try with another name")
+        say(f"{group_name} doesn't exist in our database")
     elif response.status_code == requests.codes.ok:
         say(f"Add member success")
     else:
@@ -126,6 +130,8 @@ def update_member_list(
 
     for i in range(1, len(new_members)):
         print("member loop", new_members[i])
+        if new_members[i] in modified_members:
+            continue
         count += 1
         if count > 1:
             modified_members += ','
@@ -157,6 +163,7 @@ def list_member(ack, say, command):
 def list_rotation(ack, say, command):
     ack()
     channel_id = command['channel_id']
+
     url = HOST_URL + "/group/" + channel_id
     response = requests.get(url)
 
@@ -241,7 +248,7 @@ async def add_rotation_command(req: Request):
 
 
 @fastApp.post("/slack/add-member")
-async def add_rotation_command(req: Request):
+async def add_member_command(req: Request):
     return await app_handler.handle(req)
 
 
@@ -256,12 +263,12 @@ async def list_rotation_command(req: Request):
 
 
 @fastApp.post("/slack/peek-current")
-async def list_rotation_command(req: Request):
+async def peek_current_command(req: Request):
     return await app_handler.handle(req)
 
 
 @fastApp.post("/slack/rotate")
-async def list_rotation_command(req: Request):
+async def rotate_command(req: Request):
     return await app_handler.handle(req)
 
 
