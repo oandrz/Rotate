@@ -31,7 +31,7 @@ def get_db():
 @app.command("/add-rotation")
 def add_group(ack, say, command):
     ack()
-    if len(command) is 0:
+    if command['text'] is None:
         say(f"Please put the parameter, to add rotation you can do it like this /add-rotation [group name]")
 
     group_name = command['text']
