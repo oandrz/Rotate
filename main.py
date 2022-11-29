@@ -143,7 +143,7 @@ def list_member(ack, say, command):
     response = request_group(channel_id=channel_id, group_name=group_name, say=say)
     if response is not None:
         group = json.loads(response.text)
-        members = group['members']
+        members = group['members'].split(",")
         count = 0
         for member in members:
             count += 1
