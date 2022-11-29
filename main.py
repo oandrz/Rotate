@@ -189,17 +189,23 @@ def list_rotation(ack, say, command):
 @app.command("/peek-current")
 def peek_current_turn(ack, say, command):
     ack()
-    commandText = command['text'].split()
-    # groupName = commandText[0]
-    # isKeyExist = groupName in db
-    # if not isKeyExist:
-    #     say("Group doesn't exist")
-    # else:
-    #     q = db[groupName]
-    #     currentTurn = q[0]
-    #
-    #     if currentTurn is not None:
-    #         say(f"Current turn is <{currentTurn}>!")
+
+    if "text" not in command:
+        say("Wrong formatting, to see current turn of the group you can do it like this /peek-current [group name]")
+
+    command_text = command['text'].split()
+    channel_id = command['channel_id']
+    group_name = command_text[0]
+
+    response = request_group(channel_id=channel_id, group_name=group_name, say=say)
+
+    if response is not None:
+        group = json.loads(response.text)
+        if "pickedSlackId" in group or group["pickedSlackId"] is None or len(group["pickedSlackId"]) == 0:
+            say(f"You don't have selected member for this rotation, please assign one by using /rotate [group name]")
+        else:
+            picked_member = group["pickedSlackId"]
+            say(f"Current turn is <{picked_member}>!")
 
 
 @app.command("/rotate")
