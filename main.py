@@ -97,9 +97,6 @@ def request_update_member(
     if picked_member is None:
         picked_member_request = members_request.split(',')[0]
 
-    print("group name is:", members_request)
-    print("group name is:", picked_member_request)
-
     url = HOST_URL + "/group/member"
 
     request_body = {"name": group_name, "channelId": channel_id, "pickedSlackId": picked_member_request,
@@ -125,11 +122,7 @@ def update_member_list(
         count = len(current_members.split(","))
         modified_members = current_members
 
-    print("member is", new_members)
-    print("current is", current_members)
-
     for i in range(1, len(new_members)):
-        print("member loop", new_members[i])
         if new_members[i] in modified_members:
             continue
         count += 1
@@ -137,7 +130,6 @@ def update_member_list(
             modified_members += ','
         modified_members += new_members[i]
 
-    print("Current modified member is", modified_members)
 
     return modified_members
 
@@ -145,19 +137,17 @@ def update_member_list(
 @app.command("/list-member")
 def list_member(ack, say, command):
     ack()
-    # commandText = command['text'].split()
-    # groupName = commandText[0]
-    # isKeyExist = groupName in db
-    # if not isKeyExist:
-    #     say(f"Group doesn't exist")
-    # else:
-    #     q = db[groupName]
-    #
-    #     count = 1
-    #     for member in q:
-    #         say(f"Group member number {count}: <{member}>!")
-    #         count += 1
-
+    command_text = command['text'].split()
+    channel_id = command['channel_id']
+    group_name = command_text[0]
+    response = request_group(channel_id=channel_id, group_name=group_name, say=say)
+    if response is not None:
+        group = json.loads(response.text)
+        members = group['members']
+        count = 0
+        for member in members:
+            count += 1
+            say(f"Group member number {count}: <{member}>!")
 
 @app.command("/list-rotation")
 def list_rotation(ack, say, command):
@@ -291,9 +281,6 @@ async def get_group_list(channel_id: str, db: Session = Depends(get_db)):
 
 @fastApp.put("/group/member")
 async def update_group_to_add_member(group: schemas.GroupUpdate, db: Session = Depends(get_db)):
-    print("group members", group.members)
-
-    print("picked group member", group.pickedSlackId)
     db_group = crud.getGroup(db, groupName=group.name, channelId=group.channelId)
     if db_group is None:
         raise HTTPException(status_code=400, detail="No Group Exist")
@@ -306,3 +293,4 @@ async def get_specific_group(channel_id: str, group_name: str, db: Session = Dep
     if db_group is None:
         raise HTTPException(status_code=400, detail="No Group Exist")
     return db_group
+
