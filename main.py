@@ -201,7 +201,7 @@ def peek_current_turn(ack, say, command):
 
     if response is not None:
         group = json.loads(response.text)
-        if "pickedSlackId" in group or group["pickedSlackId"] is None or len(group["pickedSlackId"]) == 0:
+        if "pickedSlackId" not in group or group["pickedSlackId"] is None or len(group["pickedSlackId"]) == 0:
             say(f"You don't have selected member for this rotation, please assign one by using /rotate [group name]")
         else:
             picked_member = group["pickedSlackId"]
