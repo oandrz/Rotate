@@ -31,6 +31,9 @@ def get_db():
 @app.command("/add-rotation")
 def add_group(ack, say, command):
     ack()
+    if len(command) is 0:
+        say(f"Please put the parameter, to add rotation you can do it like this /add-rotation [group name]")
+
     group_name = command['text']
     channel_id = command['channel_id']
 
@@ -49,6 +52,9 @@ def add_group(ack, say, command):
 @app.command("/add-member")
 def add_member(ack, say, command):
     ack()
+    if len(command) <= 1:
+        say(f"Please put the parameter, to add member you can do it like this /add-member [group name] [member1,...]")
+
     channel_id = command['channel_id']
     command_text = command['text'].split()
 
@@ -130,13 +136,16 @@ def update_member_list(
             modified_members += ','
         modified_members += new_members[i]
 
-
     return modified_members
 
 
 @app.command("/list-member")
 def list_member(ack, say, command):
     ack()
+
+    if len(command) is 0:
+        say(f"Please put the parameter, to list member of the group you can do it like this /list-member [group name]")
+
     command_text = command['text'].split()
     channel_id = command['channel_id']
     group_name = command_text[0]
@@ -148,6 +157,7 @@ def list_member(ack, say, command):
         for member in members:
             count += 1
             say(f"Group member number {count}: <{member}>!")
+
 
 @app.command("/list-rotation")
 def list_rotation(ack, say, command):
