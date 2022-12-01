@@ -43,7 +43,7 @@ def add_group(ack, say, command):
     response = requests.post(url, json=request)
 
     if response.status_code == requests.codes.ok:
-        say(f"Success add {group_name}")
+        say(f"Success add `{group_name}`")
     elif response.status_code == 400:
         say(f"{group_name} already exist in our database")
     else:
