@@ -52,7 +52,7 @@ def add_group(ack, say, command):
 @app.command("/add-member")
 def add_member(ack, say, command):
     ack()
-    if "text" not in command or len(command["text"]) <= 1:
+    if "text" not in command or len(command["text"].split()) <= 1:
         say("Please put the parameter, to add member you can do it like this /add-member [group name] [member1,...]")
 
     channel_id = command['channel_id']
