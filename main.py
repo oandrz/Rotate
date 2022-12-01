@@ -31,8 +31,9 @@ def get_db():
 @app.command("/add-rotation")
 def add_group(ack, say, command):
     ack()
-    if command['text'] is None:
-        say(f"Please put the parameter, to add rotation you can do it like this /add-rotation [group name]")
+    if "text" not in command:
+        say("Please put the parameter, to add rotation you can do it like this `/add-rotation [group name]`")
+        return
 
     group_name = command['text']
     channel_id = command['channel_id']
@@ -52,8 +53,9 @@ def add_group(ack, say, command):
 @app.command("/add-member")
 def add_member(ack, say, command):
     ack()
-    if len(command) <= 1:
-        say(f"Please put the parameter, to add member you can do it like this /add-member [group name] [member1,...]")
+    if "text" not in command or len(command["text"].split()) <= 1:
+        say("Please put the parameter, to add member you can do it like this `/add-member [group name] [member1,...]`")
+        return
 
     channel_id = command['channel_id']
     command_text = command['text'].split()
@@ -65,14 +67,25 @@ def add_member(ack, say, command):
     picked_member = group['pickedSlackId']
     members = group['members']
 
-    request_update_member(
+    members_request = update_member_list(current_members=members, new_members=command_text)
+
+    picked_member_request = ""
+    if picked_member is None:
+        picked_member_request = members_request.split(',')[0]
+
+    response = request_update_member(
         channel_id=channel_id,
         group_name=group_name,
-        picked_member=picked_member,
-        new_members=command_text,
-        current_members=members,
-        say=say
+        picked_member=picked_member_request,
+        members=members_request
     )
+
+    if response.status_code == 400:
+        say(f"{group_name} doesn't exist in our database")
+    elif response.status_code == requests.codes.ok:
+        say(f"Add member success")
+    else:
+        say(f"Sorry there's an unrecognizable error in my system, please wait until my engineer fix me")
 
 
 def request_group(channel_id: str, group_name: str, say):
@@ -93,28 +106,15 @@ def request_update_member(
     channel_id: str,
     group_name: str,
     picked_member: str,
-    current_members: str,
-    new_members,
-    say
+    members: str
 ):
-    members_request = update_member_list(current_members=current_members, new_members=new_members)
-
-    picked_member_request = ""
-    if picked_member is None:
-        picked_member_request = members_request.split(',')[0]
-
     url = HOST_URL + "/group/member"
 
-    request_body = {"name": group_name, "channelId": channel_id, "pickedSlackId": picked_member_request,
-                    "members": members_request}
+    request_body = {"name": group_name, "channelId": channel_id, "pickedSlackId": picked_member,
+                    "members": members}
     response = requests.put(url, json=request_body)
 
-    if response.status_code == 400:
-        say(f"{group_name} doesn't exist in our database")
-    elif response.status_code == requests.codes.ok:
-        say(f"Add member success")
-    else:
-        say(f"Sorry there's an unrecognizable error in my system, please wait until my engineer fix me")
+    return response
 
 
 def update_member_list(
@@ -143,8 +143,9 @@ def update_member_list(
 def list_member(ack, say, command):
     ack()
 
-    if len(command) is 0:
-        say(f"Please put the parameter, to list member of the group you can do it like this /list-member [group name]")
+    if "text" not in command:
+        say("Please put the parameter, to list member of the group you can do it like this `/list-member [group name]`")
+        return
 
     command_text = command['text'].split()
     channel_id = command['channel_id']
@@ -179,7 +180,7 @@ def list_rotation(ack, say, command):
                 if count > 1:
                     text += ', '
                 text += group['name']
-            say(f"Here are the group that I could found in this channel: {text}")
+            say(f"Here are the group that I could found in this channel: `{text}`")
     elif response.status_code == 400:
         say(f"We don't found any rotation group, please create a new one first.")
     else:
@@ -189,39 +190,79 @@ def list_rotation(ack, say, command):
 @app.command("/peek-current")
 def peek_current_turn(ack, say, command):
     ack()
-    commandText = command['text'].split()
-    # groupName = commandText[0]
-    # isKeyExist = groupName in db
-    # if not isKeyExist:
-    #     say("Group doesn't exist")
-    # else:
-    #     q = db[groupName]
-    #     currentTurn = q[0]
-    #
-    #     if currentTurn is not None:
-    #         say(f"Current turn is <{currentTurn}>!")
+
+    if "text" not in command:
+        say("Wrong formatting, to see current turn of the group you can do it like this` /peek-current [group name]`")
+        return
+
+    command_text = command['text'].split()
+    channel_id = command['channel_id']
+    group_name = command_text[0]
+
+    response = request_group(channel_id=channel_id, group_name=group_name, say=say)
+
+    if response is not None:
+        group = json.loads(response.text)
+        if "pickedSlackId" not in group or group["pickedSlackId"] is None or len(group["pickedSlackId"]) == 0:
+            say(f"You don't have selected member for this rotation, please assign one by using `/rotate [group name]`")
+        else:
+            picked_member = group["pickedSlackId"]
+            say(f"Current turn is <{picked_member}>!")
 
 
 @app.command("/rotate")
 def rotate_member(ack, say, command):
     ack()
-    commandText = command['text'].split()
-    # groupName = commandText[0]
-    # isKeyExist = groupName in db
-    # if not isKeyExist:
-    #     say("Group doesn't exist")
-    # else:
-    #     q = db[groupName]
-    #     rotated = q.popleft()
-    #     current = q[0]
-    #     q.append(rotated)
-    #
-    #     if current is not None:
-    #         say(f"Current turn is <{current}>!")
+
+    if "text" not in command:
+        say("Wrong formatting, to see current turn of the group you can do it like this `/peek-current [group name]`")
+        return
+
+    command_text = command['text'].split()
+    channel_id = command['channel_id']
+    group_name = command_text[0]
+
+    response = request_group(channel_id=channel_id, group_name=group_name, say=say)
+
+    if response is not None:
+        updated_members = group_lru(response, say)
+        updated_picked_member = updated_members.split(",")[0]
+
+        response = request_update_member(
+            channel_id=channel_id,
+            group_name=group_name,
+            picked_member=updated_picked_member,
+            members=updated_members
+        )
+
+        if response.status_code == 400:
+            say(f"{group_name} doesn't exist in our database")
+        elif response.status_code == requests.codes.ok:
+            say(f"<{updated_picked_member}>! it's your turn now")
+        else:
+            say(f"Sorry there's an unrecognizable error in my system, please wait until my engineer fix me")
+
+
+def group_lru(response, say):
+    updated_members = ""
+
+    group = json.loads(response.text)
+    if "members" not in group or len(group["members"]) == 0:
+        say(f"Please add the member of this rotation first")
+        return
+
+    members = group["members"].split(",")
+    move_back_member = members[0]
+
+    for i in range(1, len(members)):
+        updated_members += members[i]
+        if len(members) - 1 - i > 0:
+            updated_members += ','
+
+    return updated_members + ',' + move_back_member
 
 
 # FastAPI
-
 fastApp = FastAPI()
 app_handler = SlackRequestHandler(app)
 
