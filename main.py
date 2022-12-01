@@ -32,7 +32,8 @@ def get_db():
 def add_group(ack, say, command):
     ack()
     if "text" not in command:
-        say("Please put the parameter, to add rotation you can do it like this /add-rotation [group name]")
+        say("Please put the parameter, to add rotation you can do it like this `/add-rotation [group name]`")
+        return
 
     group_name = command['text']
     channel_id = command['channel_id']
@@ -53,7 +54,8 @@ def add_group(ack, say, command):
 def add_member(ack, say, command):
     ack()
     if "text" not in command or len(command["text"].split()) <= 1:
-        say("Please put the parameter, to add member you can do it like this /add-member [group name] [member1,...]")
+        say("Please put the parameter, to add member you can do it like this `/add-member [group name] [member1,...]`")
+        return
 
     channel_id = command['channel_id']
     command_text = command['text'].split()
@@ -142,7 +144,8 @@ def list_member(ack, say, command):
     ack()
 
     if "text" not in command:
-        say("Please put the parameter, to list member of the group you can do it like this /list-member [group name]")
+        say("Please put the parameter, to list member of the group you can do it like this `/list-member [group name]`")
+        return
 
     command_text = command['text'].split()
     channel_id = command['channel_id']
@@ -177,7 +180,7 @@ def list_rotation(ack, say, command):
                 if count > 1:
                     text += ', '
                 text += group['name']
-            say(f"Here are the group that I could found in this channel: {text}")
+            say(f"Here are the group that I could found in this channel: `{text}`")
     elif response.status_code == 400:
         say(f"We don't found any rotation group, please create a new one first.")
     else:
@@ -189,7 +192,8 @@ def peek_current_turn(ack, say, command):
     ack()
 
     if "text" not in command:
-        say("Wrong formatting, to see current turn of the group you can do it like this /peek-current [group name]")
+        say("Wrong formatting, to see current turn of the group you can do it like this` /peek-current [group name]`")
+        return
 
     command_text = command['text'].split()
     channel_id = command['channel_id']
@@ -200,7 +204,7 @@ def peek_current_turn(ack, say, command):
     if response is not None:
         group = json.loads(response.text)
         if "pickedSlackId" not in group or group["pickedSlackId"] is None or len(group["pickedSlackId"]) == 0:
-            say(f"You don't have selected member for this rotation, please assign one by using /rotate [group name]")
+            say(f"You don't have selected member for this rotation, please assign one by using `/rotate [group name]`")
         else:
             picked_member = group["pickedSlackId"]
             say(f"Current turn is <{picked_member}>!")
@@ -211,7 +215,8 @@ def rotate_member(ack, say, command):
     ack()
 
     if "text" not in command:
-        say("Wrong formatting, to see current turn of the group you can do it like this /peek-current [group name]")
+        say("Wrong formatting, to see current turn of the group you can do it like this `/peek-current [group name]`")
+        return
 
     command_text = command['text'].split()
     channel_id = command['channel_id']
@@ -244,6 +249,7 @@ def group_lru(response, say):
     group = json.loads(response.text)
     if "members" not in group or len(group["members"]) == 0:
         say(f"Please add the member of this rotation first")
+        return
 
     members = group["members"].split(",")
     move_back_member = members[0]
