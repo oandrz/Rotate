@@ -226,8 +226,8 @@ def rotate_member(ack, say, command):
         response = request_update_member(
             channel_id=channel_id,
             group_name=group_name,
-            picked_member=updated_members,
-            members=updated_picked_member
+            picked_member=updated_picked_member,
+            members=updated_members
         )
 
         if response.status_code == 400:
