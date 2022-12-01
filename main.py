@@ -153,6 +153,11 @@ def list_member(ack, say, command):
     response = request_group(channel_id=channel_id, group_name=group_name, say=say)
     if response is not None:
         group = json.loads(response.text)
+
+        if "members" not in group or group['members'] is None:
+            say("You don't have member in your group, please add one by using command `/add-member [group name] ["
+                "member1, member2,...]`")
+
         members = group['members'].split(",")
         count = 0
         for member in members:
