@@ -7,6 +7,7 @@ from typing import (
 class GroupBase(BaseModel):
     name: str
     channelId: str
+    team_domain: str
     pickedSlackId: Optional[str] = None
     members: Optional[str] = None
 

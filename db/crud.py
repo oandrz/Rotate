@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from . import models, schemas
 
+###todo: move to env variable
 
 def getGroupListInChannel(db: Session, channelId: str):
     return db.query(models.RotationGroup).filter(models.RotationGroup.channelId == channelId).all()
@@ -14,7 +15,7 @@ def getPickedMember(db: Session, groupName: str, channelId: str):
     return getGroup(db, groupName, channelId).pickedSlackId
 
 
-def getGroup(db: Session, groupName: str, channelId: str):
+def getGroup(db: Session, groupName: str, channelId: str, team_domain: str):
     return db.query(models.RotationGroup).filter(
         models.RotationGroup.name == groupName and models.RotationGroup.channelId == channelId
     ).first()
@@ -37,3 +38,7 @@ def updateGroup(db: Session, group: schemas.GroupUpdate):
     db.commit()
     db.refresh(db_group)
     return db_group
+
+
+def add_group(db, request: schemas.GroupCreate):
+    return db.child(request.team_domain).child(request.channelId).push(request)
