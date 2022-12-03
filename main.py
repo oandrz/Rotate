@@ -103,10 +103,10 @@ def request_group(channel_id: str, group_name: str, say):
 
 
 def request_update_member(
-    channel_id: str,
-    group_name: str,
-    picked_member: str,
-    members: str
+        channel_id: str,
+        group_name: str,
+        picked_member: str,
+        members: str
 ):
     url = HOST_URL + "/group/member"
 
@@ -118,8 +118,8 @@ def request_update_member(
 
 
 def update_member_list(
-    current_members: str,
-    new_members,
+        current_members: str,
+        new_members,
 ):
     modified_members = ""
     count = 0
@@ -213,6 +213,8 @@ def peek_current_turn(ack, say, command):
         else:
             picked_member = group["pickedSlackId"]
             say(f"Current turn is <{picked_member}>!")
+
+
 @app.command("/easter")
 def print_all(ack, say, command):
     ack()
@@ -323,8 +325,9 @@ async def peek_current_command(req: Request):
 async def rotate_command(req: Request):
     return await app_handler.handle(req)
 
+
 @fastApp.post("/slack/easter")
-async def easter(req):
+async def easter(req: Request):
     return await app_handler.handle(req)
 
 
@@ -359,4 +362,3 @@ async def get_specific_group(channel_id: str, group_name: str, db: Session = Dep
     if db_group is None:
         raise HTTPException(status_code=400, detail="No Group Exist")
     return db_group
-
