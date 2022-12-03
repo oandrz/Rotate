@@ -213,6 +213,12 @@ def peek_current_turn(ack, say, command):
         else:
             picked_member = group["pickedSlackId"]
             say(f"Current turn is <{picked_member}>!")
+@app.command("/easter")
+def print_all(ack, say, command):
+    ack()
+
+    for key, value in command.items():
+        say(f"the key is {key} and the value is {value}")
 
 
 @app.command("/rotate")
@@ -315,6 +321,10 @@ async def peek_current_command(req: Request):
 
 @fastApp.post("/slack/rotate")
 async def rotate_command(req: Request):
+    return await app_handler.handle(req)
+
+@fastApp.post("/slack/easter")
+async def easter(req):
     return await app_handler.handle(req)
 
 
