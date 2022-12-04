@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import (
     List, Optional
 )
-
+import json
 
 class GroupBase(BaseModel):
     name: str
@@ -13,7 +13,8 @@ class GroupBase(BaseModel):
 
 
 class GroupCreate(GroupBase):
-    pass
+    def to_json(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
 class GroupUpdate(GroupBase):

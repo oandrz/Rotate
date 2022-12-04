@@ -340,7 +340,7 @@ async def add_new_group(group: schemas.GroupCreate, db: Session = Depends(get_db
     #     raise HTTPException(status_code=400, detail="Group Already Exist")
     db = firebase.database()
 
-    return db.child(group.team_domain).child(group.channelId).push(group)
+    return db.child(group.team_domain).child(group.channelId).push(group.to_json())
 
 
 @fastApp.get("/group/{channel_id}", response_model=List[schemas.Group])
