@@ -339,7 +339,7 @@ async def add_new_group(group: schemas.GroupCreate):
     return db.child(group.team_domain).child(group.channelId).push(group.to_json())
 
 
-@fastApp.get("/group/{team_domain}/{channel_id}", response_model=List[schemas.Group])
+@fastApp.get("/group/{team_domain}/{channel_id}")
 async def get_group_list(team_domain: str, channel_id: str):
     db = firebase.database()
     return db.child(team_domain).child(channel_id).get().each()
