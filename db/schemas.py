@@ -22,7 +22,4 @@ class GroupUpdate(GroupBase):
 
 
 class Group(GroupBase):
-    id: int
-
-    class Config:
-        orm_mode = True
+    pass
