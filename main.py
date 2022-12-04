@@ -9,7 +9,7 @@ from slack_bolt.adapter.fastapi import SlackRequestHandler
 from typing import List
 from sqlalchemy.orm import Session
 from db import crud, models, schemas
-from db.database import SessionLocal, engine
+from db.database import SessionLocal, engine, firebase
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -37,9 +37,10 @@ def add_group(ack, say, command):
 
     group_name = command['text']
     channel_id = command['channel_id']
+    team_domain = command['team_domain']
 
     url = HOST_URL + "/group/add"
-    request = {"name": group_name, "channelId": channel_id}
+    request = {"name": group_name, "channelId": channel_id, "team_domain": team_domain}
     response = requests.post(url, json=request)
 
     if response.status_code == requests.codes.ok:
@@ -103,10 +104,10 @@ def request_group(channel_id: str, group_name: str, say):
 
 
 def request_update_member(
-    channel_id: str,
-    group_name: str,
-    picked_member: str,
-    members: str
+        channel_id: str,
+        group_name: str,
+        picked_member: str,
+        members: str
 ):
     url = HOST_URL + "/group/member"
 
@@ -118,8 +119,8 @@ def request_update_member(
 
 
 def update_member_list(
-    current_members: str,
-    new_members,
+        current_members: str,
+        new_members,
 ):
     modified_members = ""
     count = 0
@@ -213,6 +214,14 @@ def peek_current_turn(ack, say, command):
         else:
             picked_member = group["pickedSlackId"]
             say(f"Current turn is <{picked_member}>!")
+
+
+@app.command("/easter")
+def print_all(ack, say, command):
+    ack()
+
+    for key, value in command.items():
+        say(f"the key is {key} and the value is {value}")
 
 
 @app.command("/rotate")
@@ -318,21 +327,22 @@ async def rotate_command(req: Request):
     return await app_handler.handle(req)
 
 
+@fastApp.post("/slack/easter")
+async def easter(req: Request):
+    return await app_handler.handle(req)
+
+
 # DB
 @fastApp.post("/group/add")
-async def add_new_group(group: schemas.GroupCreate, db: Session = Depends(get_db)):
-    db_group = crud.getGroup(db, groupName=group.name, channelId=group.channelId)
-    if db_group:
-        raise HTTPException(status_code=400, detail="Group Already Exist")
-    return crud.createGroup(db=db, group=group)
+async def add_new_group(group: schemas.GroupCreate):
+    db = firebase.database()
+    return db.child(group.team_domain).child(group.channelId).push(group.to_json())
 
 
-@fastApp.get("/group/{channel_id}", response_model=List[schemas.Group])
-async def get_group_list(channel_id: str, db: Session = Depends(get_db)):
-    db_group = crud.getGroupListInChannel(db=db, channelId=channel_id)
-    if db_group is None:
-        raise HTTPException(status_code=400, detail="No Group Exist")
-    return db_group
+@fastApp.get("/group/{team_domain}/{channel_id}")
+async def get_group_list(team_domain: str, channel_id: str):
+    db = firebase.database()
+    return db.child(team_domain).child(channel_id).get().val()
 
 
 @fastApp.put("/group/member")
@@ -349,4 +359,3 @@ async def get_specific_group(channel_id: str, group_name: str, db: Session = Dep
     if db_group is None:
         raise HTTPException(status_code=400, detail="No Group Exist")
     return db_group
-

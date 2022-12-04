@@ -14,7 +14,7 @@ def getPickedMember(db: Session, groupName: str, channelId: str):
     return getGroup(db, groupName, channelId).pickedSlackId
 
 
-def getGroup(db: Session, groupName: str, channelId: str):
+def getGroup(db: Session, groupName: str, channelId: str, team_domain: str):
     return db.query(models.RotationGroup).filter(
         models.RotationGroup.name == groupName and models.RotationGroup.channelId == channelId
     ).first()
