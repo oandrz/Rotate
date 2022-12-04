@@ -334,21 +334,15 @@ async def easter(req: Request):
 
 # DB
 @fastApp.post("/group/add")
-async def add_new_group(group: schemas.GroupCreate, db: Session = Depends(get_db)):
-    # db_group = crud.getGroup(db, groupName=group.name, channelId=group.channelId)
-    # if db_group:
-    #     raise HTTPException(status_code=400, detail="Group Already Exist")
+async def add_new_group(group: schemas.GroupCreate):
     db = firebase.database()
-
     return db.child(group.team_domain).child(group.channelId).push(group.to_json())
 
 
-@fastApp.get("/group/{channel_id}", response_model=List[schemas.Group])
-async def get_group_list(channel_id: str, db: Session = Depends(get_db)):
-    db_group = crud.getGroupListInChannel(db=db, channelId=channel_id)
-    if db_group is None:
-        raise HTTPException(status_code=400, detail="No Group Exist")
-    return db_group
+@fastApp.get("/group/{team_domain}/{channel_id}", response_model=List[schemas.Group])
+async def get_group_list(team_domain: str, channel_id: str):
+    db = firebase.database()
+    return db.child(team_domain).child(channel_id).get()
 
 
 @fastApp.put("/group/member")
