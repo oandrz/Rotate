@@ -9,7 +9,7 @@ from slack_bolt.adapter.fastapi import SlackRequestHandler
 from typing import List
 from sqlalchemy.orm import Session
 from db import crud, models, schemas
-from db.database import SessionLocal, engine
+from db.database import SessionLocal, engine, firebase
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -37,9 +37,10 @@ def add_group(ack, say, command):
 
     group_name = command['text']
     channel_id = command['channel_id']
+    team_domain = command['team_domain']
 
     url = HOST_URL + "/group/add"
-    request = {"name": group_name, "channelId": channel_id}
+    request = {"name": group_name, "channelId": channel_id, "team_domain": team_domain}
     response = requests.post(url, json=request)
 
     if response.status_code == requests.codes.ok:
@@ -334,10 +335,12 @@ async def easter(req: Request):
 # DB
 @fastApp.post("/group/add")
 async def add_new_group(group: schemas.GroupCreate, db: Session = Depends(get_db)):
-    db_group = crud.getGroup(db, groupName=group.name, channelId=group.channelId)
-    if db_group:
-        raise HTTPException(status_code=400, detail="Group Already Exist")
-    return crud.createGroup(db=db, group=group)
+    # db_group = crud.getGroup(db, groupName=group.name, channelId=group.channelId)
+    # if db_group:
+    #     raise HTTPException(status_code=400, detail="Group Already Exist")
+    db = firebase.database()
+
+    return db.child(group.team_domain).child(group.channelId).push(group)
 
 
 @fastApp.get("/group/{channel_id}", response_model=List[schemas.Group])
